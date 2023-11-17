@@ -1,8 +1,10 @@
 package io.nology.siyuliu.employeecreatorbackend.employee;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +16,9 @@ public class EmployeeService {
 
 @Autowired
 private EmployeeRepository employeeRepository;
+
+@Autowired
+private ModelMapper modelMapper;
     
 public List<Employee> getAll() {
     return this.employeeRepository.findAll();
@@ -22,5 +27,22 @@ public List<Employee> getAll() {
 public Optional<Employee> getById(Long id) {
     return this.employeeRepository.findById(id);
 }
+
+public Employee createEmployee(EmployeeCreateDTO data) {
+    Employee newEmployee = modelMapper.map(data, Employee.class);
+    Employee created = this.employeeRepository.save(newEmployee);
+    return created;
+}
+    
+public Optional<Employee> updateById(Long id, EmployeeUpdateDTO data) {
+    Optional<Employee> foundEmployee = this.getById(id);
+    if(foundEmployee.isPresent()) {
+        Employee toUpdate = foundEmployee.get();
+        modelMapper.map(data, toUpdate);
+        Employee updatedEmployee = this.employeeRepository.save(toUpdate);
+        return Optional.of(updatedEmployee);
+    }
+	return foundEmployee;
+	}
     
 }

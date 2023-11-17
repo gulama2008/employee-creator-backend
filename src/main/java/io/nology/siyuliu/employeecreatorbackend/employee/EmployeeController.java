@@ -8,9 +8,14 @@ import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/employees")
@@ -29,15 +34,33 @@ public class EmployeeController {
     @GetMapping("/{id}")
     public ResponseEntity<Employee> getById(@PathVariable Long id) {
         Optional<Employee> found = this.employeeService.getById(id);
-        if(found.isPresent()) {
-			return new ResponseEntity<Employee>(found.get(), HttpStatus.OK);
-		}
-	
-		// throw an exception 
-				// (I will also create a global exception handler)
-				// will return a certain message and a status code whenever that particualr type of 
-				// exception is thrown
-                return null;
+        if (found.isPresent()) {
+            return new ResponseEntity<Employee>(found.get(), HttpStatus.OK);
+        }
+
+        // throw an exception 
+        // (I will also create a global exception handler)
+        // will return a certain message and a status code whenever that particualr type of 
+        // exception is thrown
+        return null;
     }
+    @PostMapping("/new")
+    public ResponseEntity<Employee> createEmployee(@Valid @RequestBody EmployeeCreateDTO data) {
+        Employee newEmployee = this.employeeService.createEmployee(data);
+        return new ResponseEntity<Employee>(newEmployee, HttpStatus.CREATED);
+    }
+    
+    @PatchMapping("/{id}")
+	public ResponseEntity<Employee> updateById(@PathVariable Long id, 
+			@Valid @RequestBody EmployeeUpdateDTO data) {
+		
+		Optional<Employee> updated = this.employeeService.updateById(id, data);
+		
+		if(updated.isPresent()) {
+			return new ResponseEntity<Employee>(updated.get(), HttpStatus.OK);
+		}
+		
+        return null;
+	}
 
 }
