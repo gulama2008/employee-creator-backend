@@ -4,9 +4,10 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.nology.siyuliu.employeecreatorbackend.exceptions.NotFoundException;
 import jakarta.validation.Valid;
 
 @RestController
@@ -25,7 +27,6 @@ public class EmployeeController {
     private EmployeeService employeeService;
 
     @GetMapping
-    // @CrossOrigin(origins = "http://localhost:5173")
     public ResponseEntity<List<Employee>> getAll() {
         List<Employee> allEmployees = this.employeeService.getAll();
         return new ResponseEntity<>(allEmployees, HttpStatus.OK);
@@ -37,17 +38,25 @@ public class EmployeeController {
         if (found.isPresent()) {
             return new ResponseEntity<Employee>(found.get(), HttpStatus.OK);
         }
-
-        // throw an exception 
-        // (I will also create a global exception handler)
-        // will return a certain message and a status code whenever that particualr type of 
-        // exception is thrown
-        return null;
+        throw new NotFoundException(String.format("Employee with id: %d does not exist", id));
     }
+
     @PostMapping("/new")
     public ResponseEntity<Employee> createEmployee(@Valid @RequestBody EmployeeCreateDTO data) {
         Employee newEmployee = this.employeeService.createEmployee(data);
         return new ResponseEntity<Employee>(newEmployee, HttpStatus.CREATED);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Employee> deleteById(@PathVariable Long id) {
+        boolean deleted = this.employeeService.deleteById(id);
+
+        if (deleted == true) {
+            return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
+        }
+
+        throw new NotFoundException(String
+                .format("Employee with id: %d does not exist, could not delete", id));
     }
     
     @PatchMapping("/{id}")
@@ -59,8 +68,7 @@ public class EmployeeController {
 		if(updated.isPresent()) {
 			return new ResponseEntity<Employee>(updated.get(), HttpStatus.OK);
 		}
-		
-        return null;
+        throw new NotFoundException(String.format("Employee with id: %d does not exist, could not update", id));
 	}
 
 }

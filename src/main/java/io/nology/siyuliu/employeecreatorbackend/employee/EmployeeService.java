@@ -1,13 +1,9 @@
 package io.nology.siyuliu.employeecreatorbackend.employee;
-
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import jakarta.transaction.Transactional;
 
 @Service
@@ -33,6 +29,15 @@ public Employee createEmployee(EmployeeCreateDTO data) {
     Employee created = this.employeeRepository.save(newEmployee);
     return created;
 }
+
+public boolean deleteById(Long id) {
+		Optional<Employee> foundEmployee = this.employeeRepository.findById(id);
+		if(foundEmployee.isPresent()) {
+			this.employeeRepository.delete(foundEmployee.get());
+			return true;
+		}
+		return false;
+	}
     
 public Optional<Employee> updateById(Long id, EmployeeUpdateDTO data) {
     Optional<Employee> foundEmployee = this.getById(id);
@@ -43,6 +48,6 @@ public Optional<Employee> updateById(Long id, EmployeeUpdateDTO data) {
         return Optional.of(updatedEmployee);
     }
 	return foundEmployee;
-	}
+}
     
 }
